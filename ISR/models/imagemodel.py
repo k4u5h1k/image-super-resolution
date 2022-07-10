@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 
 from ISR.utils.image_processing import (
     process_array,
@@ -14,7 +15,7 @@ class ImageModel:
     Contains functions that are common across the super-scaling models.
     """
     
-    def predict(self, input_image_array, by_patch_of_size=None, batch_size=10, padding_size=2):
+    def predict(self, input_image_array, by_patch_of_size=None, batch_size=10, padding_size=2, **kwargs):
         """
         Processes the image array into a suitable format
         and transforms the network output in a suitable image format.
@@ -37,8 +38,8 @@ class ImageModel:
                 lr_img, patch_size=by_patch_of_size, padding_size=padding_size
             )
             # return patches
-            for i in range(0, len(patches), batch_size):
-                batch = self.model.predict(patches[i: i + batch_size])
+            for i in tqdm(range(0, len(patches), batch_size)):
+                batch = self.model.predict(patches[i: i + batch_size], **kwargs)
                 if i == 0:
                     collect = batch
                 else:
@@ -56,7 +57,7 @@ class ImageModel:
         
         else:
             lr_img = process_array(input_image_array)
-            sr_img = self.model.predict(lr_img)[0]
+            sr_img = self.model.predict(lr_img, **kwargs)[0]
         
         sr_img = process_output(sr_img)
         return sr_img
